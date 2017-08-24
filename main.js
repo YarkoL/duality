@@ -1,9 +1,9 @@
 console.log("Duality main.js");
 
-myTest();
+localNetworkTest();
+//
 
-
-function myTest() {
+function localNetworkTest() {
     console.log("test1");
     var teststring = "test1234";
     //var uri = 
@@ -15,10 +15,10 @@ function myTest() {
     };
     */
     var serverConf = null;
-    
-    var server = new WebRtcNetwork(new SignalingConfig(new LocalNetwork), serverConf);
+    var wss = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
+    var server = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(wss)), serverConf);
     server.StartServer();
-    var client = new WebRtcNetwork(new SignalingConfig(new LocalNetwork), serverConf);
+    var client = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(wss)), serverConf);
     setInterval(function() {
         server.Update();
         var event = null;

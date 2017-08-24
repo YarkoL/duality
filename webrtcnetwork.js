@@ -103,12 +103,14 @@ var NetEventType;
     e[e["Warning"] = 101] = "Warning";
     e[e["Log"] = 102] = "Log"
 })(NetEventType || (NetEventType = {}));
+
 var NetEventDataType;
 (function(e) {
     e[e["Null"] = 0] = "Null";
     e[e["ByteArray"] = 1] = "ByteArray";
     e[e["UTF16String"] = 2] = "UTF16String"
 })(NetEventDataType || (NetEventDataType = {}));
+
 var NetworkEvent = function() {
     function e(e, t, n) {
         this.type = e;
@@ -249,6 +251,7 @@ var NetworkEvent = function() {
     };
     return e
 }();
+
 var ConnectionId = function() {
     function e(e) {
         this.id = e
@@ -256,6 +259,7 @@ var ConnectionId = function() {
     e.INVALID = new e(-1);
     return e
 }();
+
 var LocalNetwork = function() {
     function e() {
         this.mNextNetworkId = new ConnectionId(1);
@@ -404,6 +408,7 @@ var WebRtcNetworkServerState;
     e[e["Starting"] = 2] = "Starting";
     e[e["Online"] = 3] = "Online"
 })(WebRtcNetworkServerState || (WebRtcNetworkServerState = {}));
+
 var SignalingConfig = function() {
     function e(e) {
         this.mNetwork = e
@@ -413,6 +418,7 @@ var SignalingConfig = function() {
     };
     return e
 }();
+
 var SignalingInfo = function() {
     function e(e, t, n) {
         this.mConnectionId = e;
@@ -441,6 +447,7 @@ var SignalingInfo = function() {
     };
     return e
 }();
+
 var WebRtcNetwork = function() {
     function e(e, t) {
         this.mTimeout = 6e4;
@@ -689,6 +696,7 @@ var WebRtcNetwork = function() {
     };
     return e
 }();
+
 var WebRtcPeerState;
 (function(e) {
     e[e["Invalid"] = 0] = "Invalid";
@@ -707,6 +715,7 @@ var WebRtcInternalState;
     e[e["Connected"] = 3] = "Connected";
     e[e["Closed"] = 4] = "Closed"
 })(WebRtcInternalState || (WebRtcInternalState = {}));
+
 var AWebRtcPeer = function() {
     function e(e) {
         this.mState = WebRtcPeerState.Invalid;
@@ -930,6 +939,7 @@ var AWebRtcPeer = function() {
     };
     return e
 }();
+
 var WebRtcDataPeer = function(e) {
     __extends(t, e);
 
@@ -1108,6 +1118,7 @@ var WebRtcDataPeer = function(e) {
     t.sLabelUnreliable = "unreliable";
     return t
 }(AWebRtcPeer);
+
 var WebsocketConnectionStatus;
 (function(e) {
     e[e["Uninitialized"] = 0] = "Uninitialized";
