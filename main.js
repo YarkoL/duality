@@ -17,7 +17,7 @@ function localNetworkTest() {
     var serverConf = null;
     var wss = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
     var server = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(wss)), serverConf);
-    server.StartServer();
+    server.StartServer("test");
     var client = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(wss)), serverConf);
     setInterval(function() {
         server.Update();
@@ -47,19 +47,14 @@ function localNetworkTest() {
             console.log("client inc: " + event.toString());
             if (event.Type == NetEventType.NewConnection) {
                 console.log("client connection established");
-                var serverConf = stringToBuffer(teststring);
-                client.SendData(event.ConnectionId, serverConf, true)
+                var buf = stringToBuffer(teststring);
+                client.SendData(event.ConnectionId, buf, true)
             } else if (event.Type == NetEventType.ReliableMessageReceived) {
                 var r = bufferToString(event.MessageData);
                 if (r != teststring) {
                     console.error("Test failed sent string %s but received string %s", teststring, r)
-                }
-                var testBuf = stringToBuffer(teststring);
-                client.SendData(event.ConnectionId, testBuf, false)
-            } else if (event.Type == NetEventType.UnreliableMessageReceived) {
-                var r = bufferToString(event.MessageData);
-                if (r != teststring) {
-                    console.error("Test failed sent string %s but received string %s", teststring, r)
+                } else {
+                	console.log("Received reliable message containing string %s", teststring);
                 }
                 console.log("client disconnecting");
                 client.Disconnect(event.ConnectionId);

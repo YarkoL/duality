@@ -7,400 +7,6 @@ var __extends = this && this.__extends || function(e, t) {
     e.prototype = t === null ? Object.create(t) : (i.prototype = t.prototype, new i)
 };
 
-var Queue = function() {
-    function e() {
-        this.mArr = new Array
-    }
-    e.prototype.Enqueue = function(e) {
-        this.mArr.push(e)
-    };
-    e.prototype.TryDequeue = function(e) {
-        var t = false;
-        if (this.mArr.length > 0) {
-            e.val = this.mArr.shift();
-            t = true
-        }
-        return t
-    };
-    e.prototype.Dequeue = function() {
-        if (this.mArr.length > 0) {
-            return this.mArr.shift()
-        } else {
-            return null
-        }
-    };
-    e.prototype.Peek = function() {
-        if (this.mArr.length > 0) {
-            return this.mArr[0]
-        } else {
-            return null
-        }
-    };
-    e.prototype.Count = function() {
-        return this.mArr.length
-    };
-    return e
-}();
-
-var Output = function() {
-    function e() {}
-    return e
-}();
-
-var Debug = function() {
-    function e() {}
-    e.Log = function(e) {
-        if (e == null) {
-            console.debug(e)
-        }
-        console.debug(e)
-    };
-    e.LogError = function(e) {
-        console.debug(e)
-    };
-    e.LogWarning = function(e) {
-        console.debug(e)
-    };
-    return e
-}();
-
-var Random = function() {
-    function e() {}
-    e.getRandomInt = function(e, t) {
-        e = Math.ceil(e);
-        t = Math.floor(t);
-        return Math.floor(Math.random() * (t - e)) + e
-    };
-    return e
-}();
-
-var Helper = function() {
-    function e() {}
-    e.tryParseInt = function(e) {
-        try {
-            if (/^(\-|\+)?([0-9]+)$/.test(e)) {
-                var t = Number(e);
-                if (isNaN(t) == false) return t
-            }
-        } catch (e) {}
-        return null
-    };
-    return e
-}();
-
-var NetEventType;
-(function(e) {
-    e[e["Invalid"] = 0] = "Invalid";
-    e[e["UnreliableMessageReceived"] = 1] = "UnreliableMessageReceived";
-    e[e["ReliableMessageReceived"] = 2] = "ReliableMessageReceived";
-    e[e["ServerInitialized"] = 3] = "ServerInitialized";
-    e[e["ServerInitFailed"] = 4] = "ServerInitFailed";
-    e[e["ServerClosed"] = 5] = "ServerClosed";
-    e[e["NewConnection"] = 6] = "NewConnection";
-    e[e["ConnectionFailed"] = 7] = "ConnectionFailed";
-    e[e["Disconnected"] = 8] = "Disconnected";
-    e[e["FatalError"] = 100] = "FatalError";
-    e[e["Warning"] = 101] = "Warning";
-    e[e["Log"] = 102] = "Log"
-})(NetEventType || (NetEventType = {}));
-
-var NetEventDataType;
-(function(e) {
-    e[e["Null"] = 0] = "Null";
-    e[e["ByteArray"] = 1] = "ByteArray";
-    e[e["UTF16String"] = 2] = "UTF16String"
-})(NetEventDataType || (NetEventDataType = {}));
-
-var NetworkEvent = function() {
-    function e(e, t, n) {
-        this.type = e;
-        this.connectionId = t;
-        this.data = n
-    }
-    Object.defineProperty(e.prototype, "RawData", {
-        get: function() {
-            return this.data
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(e.prototype, "MessageData", {
-        get: function() {
-            if (typeof this.data != "string") return this.data;
-            return null
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(e.prototype, "Info", {
-        get: function() {
-            if (typeof this.data == "string") return this.data;
-            return null
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(e.prototype, "Type", {
-        get: function() {
-            return this.type
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(e.prototype, "ConnectionId", {
-        get: function() {
-            return this.connectionId
-        },
-        enumerable: true,
-        configurable: true
-    });
-    e.prototype.toString = function() {
-        var e = "NetworkEvent[";
-        e += "NetEventType: (";
-        e += NetEventType[this.type];
-        e += "), id: (";
-        e += this.connectionId.id;
-        e += "), Data: (";
-        e += this.data;
-        e += ")]";
-        return e
-    };
-    e.parseFromString = function(t) {
-        var n = JSON.parse(t);
-        var i;
-        if (n.data == null) {
-            i = null
-        } else if (typeof n.data == "string") {
-            i = n.data
-        } else if (typeof n.data == "object") {
-            var o = n.data;
-            var r = 0;
-            for (var a in o) {
-                r++
-            }
-            var s = new Uint8Array(Object.keys(o).length);
-            for (var c = 0; c < s.length; c++) s[c] = o[c];
-            i = s
-        } else {
-            console.error("data can't be parsed")
-        }
-        var l = new e(n.type, n.connectionId, i);
-        return l
-    };
-    e.toString = function(e) {
-        return JSON.stringify(e)
-    };
-    e.fromByteArray = function(t) {
-        var n = t[0];
-        var i = t[1];
-        var o = new Int16Array(t.buffer, t.byteOffset + 2, 1)[0];
-        var r = null;
-        if (i == NetEventDataType.ByteArray) {
-            var a = new Uint32Array(t.buffer, t.byteOffset + 4, 1)[0];
-            var s = new Uint8Array(t.buffer, t.byteOffset + 8, a);
-            r = s
-        } else if (i == NetEventDataType.UTF16String) {
-            var c = new Uint32Array(t.buffer, t.byteOffset + 4, 1)[0];
-            var l = new Uint16Array(t.buffer, t.byteOffset + 8, c);
-            var u = "";
-            for (var g = 0; g < l.length; g++) {
-                u += String.fromCharCode(l[g])
-            }
-            r = u
-        }
-        var f = new ConnectionId(o);
-        var h = new e(n, f, r);
-        return h
-    };
-    e.toByteArray = function(e) {
-        var t;
-        var n = 4;
-        if (e.data == null) {
-            t = NetEventDataType.Null
-        } else if (typeof e.data == "string") {
-            t = NetEventDataType.UTF16String;
-            var i = e.data;
-            n += i.length * 2 + 4
-        } else {
-            t = NetEventDataType.ByteArray;
-            var o = e.data;
-            n += 4 + o.length
-        }
-        var r = new Uint8Array(n);
-        r[0] = e.type;
-        r[1] = t;
-        var a = new Int16Array(r.buffer, r.byteOffset + 2, 1);
-        a[0] = e.connectionId.id;
-        if (t == NetEventDataType.ByteArray) {
-            var o = e.data;
-            var s = new Uint32Array(r.buffer, r.byteOffset + 4, 1);
-            s[0] = o.length;
-            for (var c = 0; c < o.length; c++) {
-                r[8 + c] = o[c]
-            }
-        } else if (t == NetEventDataType.UTF16String) {
-            var i = e.data;
-            var s = new Uint32Array(r.buffer, r.byteOffset + 4, 1);
-            s[0] = i.length;
-            var l = new Uint16Array(r.buffer, r.byteOffset + 8, i.length);
-            for (var c = 0; c < l.length; c++) {
-                l[c] = i.charCodeAt(c)
-            }
-        }
-        return r
-    };
-    return e
-}();
-
-var ConnectionId = function() {
-    function e(e) {
-        this.id = e
-    }
-    e.INVALID = new e(-1);
-    return e
-}();
-
-var LocalNetwork = function() {
-    function e() {
-        this.mNextNetworkId = new ConnectionId(1);
-        this.mServerAddress = null;
-        this.mEvents = new Queue;
-        this.mConnectionNetwork = {};
-        this.mIsDisposed = false;
-        this.mId = e.sNextId;
-        e.sNextId++
-    }
-    Object.defineProperty(e.prototype, "IsServer", {
-        get: function() {
-            return this.mServerAddress != null
-        },
-        enumerable: true,
-        configurable: true
-    });
-    e.prototype.StartServer = function(t) {
-        if (t === void 0) {
-            t = null
-        }
-        if (t == null) t = "" + this.mId;
-        if (t in e.mServers) {
-            this.Enqueue(NetEventType.ServerInitFailed, ConnectionId.INVALID, t);
-            return
-        }
-        e.mServers[t] = this;
-        this.mServerAddress = t;
-        this.Enqueue(NetEventType.ServerInitialized, ConnectionId.INVALID, t)
-    };
-    e.prototype.StopServer = function() {
-        if (this.IsServer) {
-            this.Enqueue(NetEventType.ServerClosed, ConnectionId.INVALID, this.mServerAddress);
-            delete e.mServers[this.mServerAddress];
-            this.mServerAddress = null
-        }
-    };
-    e.prototype.Connect = function(t) {
-        var n = this.NextConnectionId();
-        var i = false;
-        if (t in e.mServers) {
-            var o = e.mServers[t];
-            if (o != null) {
-                o.ConnectClient(this);
-                this.mConnectionNetwork[n.id] = e.mServers[t];
-                this.Enqueue(NetEventType.NewConnection, n, null);
-                i = true
-            }
-        }
-        if (i == false) {
-            this.Enqueue(NetEventType.ConnectionFailed, n, "Couldn't connect to the given server with id " + t)
-        }
-        return n
-    };
-    e.prototype.Shutdown = function() {
-        for (var e in this.mConnectionNetwork) {
-            this.Disconnect(new ConnectionId(+e))
-        }
-        this.StopServer()
-    };
-    e.prototype.Dispose = function() {
-        if (this.mIsDisposed == false) {
-            this.Shutdown()
-        }
-    };
-    e.prototype.SendData = function(e, t, n) {
-        if (e.id in this.mConnectionNetwork) {
-            var i = this.mConnectionNetwork[e.id];
-            i.ReceiveData(this, t, n)
-        }
-    };
-    e.prototype.Update = function() {
-        this.CleanupWreakReferences()
-    };
-    e.prototype.Dequeue = function() {
-        return this.mEvents.Dequeue()
-    };
-    e.prototype.Peek = function() {
-        return this.mEvents.Peek()
-    };
-    e.prototype.Flush = function() {};
-    e.prototype.Disconnect = function(e) {
-        if (e.id in this.mConnectionNetwork) {
-            var t = this.mConnectionNetwork[e.id];
-            if (t != null) {
-                t.InternalDisconnectNetwork(this);
-                this.InternalDisconnect(e)
-            } else {
-                this.CleanupWreakReferences()
-            }
-        }
-    };
-    e.prototype.FindConnectionId = function(e) {
-        for (var t in this.mConnectionNetwork) {
-            var n = this.mConnectionNetwork[t];
-            if (n != null) {
-                return new ConnectionId(+t)
-            }
-        }
-        return ConnectionId.INVALID
-    };
-    e.prototype.NextConnectionId = function() {
-        var e = this.mNextNetworkId;
-        this.mNextNetworkId = new ConnectionId(e.id + 1);
-        return e
-    };
-    e.prototype.ConnectClient = function(e) {
-        var t = this.NextConnectionId();
-        this.mConnectionNetwork[t.id] = e;
-        this.Enqueue(NetEventType.NewConnection, t, null)
-    };
-    e.prototype.Enqueue = function(e, t, n) {
-        var i = new NetworkEvent(e, t, n);
-        this.mEvents.Enqueue(i)
-    };
-    e.prototype.ReceiveData = function(e, t, n) {
-        var i = this.FindConnectionId(e);
-        var o = new Uint8Array(t.length);
-        for (var r = 0; r < o.length; r++) {
-            o[r] = t[r]
-        }
-        var a = NetEventType.UnreliableMessageReceived;
-        if (n) a = NetEventType.ReliableMessageReceived;
-        this.Enqueue(a, i, o)
-    };
-    e.prototype.InternalDisconnect = function(e) {
-        if (e.id in this.mConnectionNetwork) {
-            this.Enqueue(NetEventType.Disconnected, e, null);
-            delete this.mConnectionNetwork[e.id]
-        }
-    };
-    e.prototype.InternalDisconnectNetwork = function(e) {
-        this.InternalDisconnect(this.FindConnectionId(e))
-    };
-    e.prototype.CleanupWreakReferences = function() {};
-    e.sNextId = 1;
-    e.mServers = {};
-    return e
-}();
-
-
 var WebRtcNetworkServerState;
 (function(e) {
     e[e["Invalid"] = 0] = "Invalid";
@@ -1352,6 +958,7 @@ var WebsocketNetwork = function() {
     return e
 }();
 
+//Utils
 
 function bufferToString(e) {
     var t = new Uint16Array(e.buffer, e.byteOffset, e.byteLength / 2);
@@ -1367,3 +974,84 @@ function stringToBuffer(e) {
     var r = new Uint8Array(t);
     return r
 }
+
+var Queue = function() {
+    function e() {
+        this.mArr = new Array
+    }
+    e.prototype.Enqueue = function(e) {
+        this.mArr.push(e)
+    };
+    e.prototype.TryDequeue = function(e) {
+        var t = false;
+        if (this.mArr.length > 0) {
+            e.val = this.mArr.shift();
+            t = true
+        }
+        return t
+    };
+    e.prototype.Dequeue = function() {
+        if (this.mArr.length > 0) {
+            return this.mArr.shift()
+        } else {
+            return null
+        }
+    };
+    e.prototype.Peek = function() {
+        if (this.mArr.length > 0) {
+            return this.mArr[0]
+        } else {
+            return null
+        }
+    };
+    e.prototype.Count = function() {
+        return this.mArr.length
+    };
+    return e
+}();
+
+var Output = function() {
+    function e() {}
+    return e
+}();
+
+var Debug = function() {
+    function e() {}
+    e.Log = function(e) {
+        if (e == null) {
+            console.debug(e)
+        }
+        console.debug(e)
+    };
+    e.LogError = function(e) {
+        console.debug(e)
+    };
+    e.LogWarning = function(e) {
+        console.debug(e)
+    };
+    return e
+}();
+
+var Random = function() {
+    function e() {}
+    e.getRandomInt = function(e, t) {
+        e = Math.ceil(e);
+        t = Math.floor(t);
+        return Math.floor(Math.random() * (t - e)) + e
+    };
+    return e
+}();
+
+var Helper = function() {
+    function e() {}
+    e.tryParseInt = function(e) {
+        try {
+            if (/^(\-|\+)?([0-9]+)$/.test(e)) {
+                var t = Number(e);
+                if (isNaN(t) == false) return t
+            }
+        } catch (e) {}
+        return null
+    };
+    return e
+}();
