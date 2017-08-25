@@ -1,68 +1,103 @@
 console.log("Duality main.js");
 
-localNetworkTest();
-//
+const roomInput = document.getElementById('roomInput');
+const chatInput = document.getElementById('chatInput');
+const joinButton = document.getElementById('joinButton');
+const openButton = document.getElementById('openButton');
+const sendButton = document.getElementById('sendButton');
+const shutdownButton = document.getElementById('shutdownButton');
+const chat = document.getElementById('chat');
 
-function localNetworkTest() {
-    console.log("test1");
-    var teststring = "test1234";
-    //var uri = 
-    /*
-    var serverConf = {
-        iceServers: [{
-            urls: ["stun:stun.l.google.com:19302"]
-        }]
-    };
-    */
-    var serverConf = null;
-    var wss = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
-    var server = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(wss)), serverConf);
-    server.StartServer("test");
-    var client = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(wss)), serverConf);
-    setInterval(function() {
-        server.Update();
-        var event = null;
-        while (event = server.Dequeue()) {
-            console.log("server inc: " + event.toString());
-            if (event.Type == NetEventType.ServerInitialized) {
-                console.log("server started. Address " + event.Info);
-                client.Connect(event.Info)
-            } else if (event.Type == NetEventType.ServerInitFailed) {
-                console.error("server start failed")
-            } else if (event.Type == NetEventType.NewConnection) {
-                console.log("server new incoming connection")
-            } else if (event.Type == NetEventType.Disconnected) {
-                console.log("server peer disconnected");event
-                console.log("server shutdown");
-                server.Shutdown()
-            } else if (event.Type == NetEventType.ReliableMessageReceived) {
-                server.SendData(event.ConnectionId, event.MessageData, true)
-            } else if (event.Type == NetEventType.UnreliableMessageReceived) {
-                server.SendData(event.ConnectionId, event.MessageData, false)
-            }
-        }
-        server.Flush();
-        client.Update();
-        while (event = client.Dequeue()) {
-            console.log("client inc: " + event.toString());
-            if (event.Type == NetEventType.NewConnection) {
-                console.log("client connection established");
-                var buf = stringToBuffer(teststring);
-                client.SendData(event.ConnectionId, buf, true)
-            } else if (event.Type == NetEventType.ReliableMessageReceived) {
-                var r = bufferToString(event.MessageData);
-                if (r != teststring) {
-                    console.error("Test failed sent string %s but received string %s", teststring, r)
-                } else {
-                	console.log("Received reliable message containing string %s", teststring);
-                }
-                console.log("client disconnecting");
-                client.Disconnect(event.ConnectionId);
-                console.log("client shutting down");
-                client.Shutdown()
-            }
-        }
-        client.Flush()
-    }, 100)
+openButton.onclick = open;
+joinButton.onclick = join;
+sendButton.onclick = send;
+shutdownButton.onclick = shutdown;
+
+var conf = null;
+var uri = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
+
+var isServer = false;
+var peer = null; //this user
+var id = null; //the other one
+var room = "";
+
+//printMessage("Welcome!", "system");
+
+function open() {
+	room = roomInput.value;
+	console.log("opened room " + room);
+	peer = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(uri)), conf);
+	peer.StartServer(room);
+	isServer = true;
+	joinButton.disabled = true;
+	sendButton.disabled = false;
+	shutdownButton.disabled = false;
+	listenForEvents();
 }
 
+function join() {
+	room = roomInput.value;
+	console.log("joined room " + room);
+	peer = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(uri)), conf);
+	peer.Connect(room)
+	openButton.disabled = true;
+	sendButton.disabled = false;
+	shutdownButton.disabled = false;
+	listenForEvents();
+}
+
+function listenForEvents() {
+	 setInterval(function() {
+	    peer.Update();
+	    var event = null;
+	    while (event = peer.Dequeue()) {
+	        console.log("inc: " + event.toString());
+	        if (event.Type == NetEventType.ServerInitialized) {
+	            printMessage("Opened room  " + event.Info, "system");
+	        } else if (event.Type == NetEventType.ServerInitFailed) {addMessage
+	            console.error("server start failed")
+	        } else if (event.Type == NetEventType.NewConnection) {
+	        	id = event.ConnectionId;
+	        	printMessage("New user got online!", "system")
+	            console.log("new connection, id " + id.toLocaleString());
+	        } else if (event.Type == NetEventType.Disconnected) {
+	            console.log("peer disconnected");event	 
+	        } else if (event.Type == NetEventType.ReliableMessageReceived) {
+	        	var msg = bufferToString(event.MessageData);
+	        	printMessage(msg, "other");
+	        } 
+	    }
+	    peer.Flush()
+	}, 100);
+}
+
+function send() {
+	var message = chatInput.value;
+	printMessage(message, "me");
+	if (id) {
+		var arr = stringToBuffer(message);
+		peer.SendData(id, arr, true);
+	} else {
+		printMessage("Sorry, failed to send!", "system")
+	}
+	console.log("sent message " + message);
+	chatInput.value = "";
+}
+
+function printMessage(txt, classId) {
+  chat.innerHTML += "<span class = " + classId + "> " + txt + "</span><br>";
+}
+
+function shutdown() {
+	console.log("shutdown");
+	sendButton.disabled = true;
+	shutdownButton.disabled = true;
+	openButton.disabled = false;
+	joinButton.disabled = false;
+	
+	peer.Disconnect(id);
+	peer.Shutdown();
+	peer = null;
+	id = null;
+
+}
