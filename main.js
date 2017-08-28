@@ -1,112 +1,89 @@
 console.log("Duality main.js");
 
-const roomInput = document.getElementById('roomInput');
-const chatInput = document.getElementById('chatInput');
-const joinButton = document.getElementById('joinButton');
-const openButton = document.getElementById('openButton');
-const sendButton = document.getElementById('sendButton');
-const shutdownButton = document.getElementById('shutdownButton');
-const chat = document.getElementById('chat');
-
-openButton.onclick = open;
-joinButton.onclick = join;
-sendButton.onclick = send;
-shutdownButton.onclick = shutdown;
+const startButton = document.getElementById("startButton");
+startButton.onclick = testRemoteCamera;
 
 
-var conf =  {'iceServers':[{
-	'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
-	'username': 'remotesupport',
-	'credential': 'h0lolens'
-	}]};
-var uri = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
 
-var isServer = false;
-var peer = null; //this user
-var id = null; //the other one
-var room = "";
-var timer = null;
-
-//printMessage("Welcome!", "system");
-
-function open() {
-	room = roomInput.value;
-	console.log("opened room " + room);
-	peer = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(uri)), conf);
-	peer.StartServer(room);
-	isServer = true;
-	joinButton.disabled = true;
-	sendButton.disabled = false;
-	shutdownButton.disabled = false;
-	listenForEvents();
+function testLocalCamera() {
+	console.log("testing local camera");
+    FrameBuffer.DEBUG_SHOW_ELEMENTS = true;
+    var e = new NetworkConfig;
+    e.SignalingUrl = null;
+    var mediaNet = new BrowserMediaNetwork(e);
+    var n = new MediaConfig;
+    n.Audio = true;
+    n.Video = true;
+    mediaNet.Configure(n);
+    setInterval(function() {
+        mediaNet.Update();
+        var e = mediaNet.TryGetFrame(ConnectionId.INVALID);
+        //console.log("width" + e.Width + " height:" + e.Height + " data:" + e.Buffer[0]);
+        mediaNet.Flush()
+    }, 50)
 }
 
-function join() {
-	room = roomInput.value;
-	console.log("joined room " + room);
-	peer = new WebRtcNetwork(new SignalingConfig(new WebsocketNetwork(uri)), conf);
-	peer.Connect(room)
-	openButton.disabled = true;
-	sendButton.disabled = false;
-	shutdownButton.disabled = false;
-	listenForEvents();
-}
-
-function listenForEvents() {
-	 timer = setInterval(function() {
-	    peer.Update();
-	    var event = null;
-	    while (event = peer.Dequeue()) {
-	        console.log("inc: " + event.toString());
-	        if (event.Type == NetEventType.ServerInitialized) {
-	            printMessage("Opened room  " + event.Info, "system");
-	        } else if (event.Type == NetEventType.ServerInitFailed) {addMessage
-	            console.error("server start failed")
-	        } else if (event.Type == NetEventType.NewConnection) {
-	        	id = event.ConnectionId;
-	        	printMessage("New user got online!", "system")
-	            console.log("new connection, id " + id.toLocaleString());
-	        } else if (event.Type == NetEventType.Disconnected) {
-	            console.log("peer disconnected");event	 
-	        } else if (event.Type == NetEventType.ReliableMessageReceived) {
-	        	//var msg = bufferToString(event.MessageData);
-	        	var msg = byteArrayToString(event.MessageData);
-	        	printMessage(msg, "other");
-	        } 
-	    }
-	    peer.Flush()
-	}, 100);
-}
-
-function send() {
-	var message = chatInput.value;
-	printMessage(message, "me");
-	if (id) {
-		//var arr = stringToBuffer(message);
-		var arr = stringToByteArray(message); 
-		peer.SendData(id, arr, true);
-	} else {
-		printMessage("Sorry, failed to send!", "system")
-	}
-	console.log("sent message " + message);
-	chatInput.value = "";
-}
-
-function printMessage(txt, classId) {
-  chat.innerHTML += "<span class = " + classId + "> " + txt + "</span><br>";
-}
-
-function shutdown() {
-	console.log("shutdown");
-	sendButton.disabled = true;
-	shutdownButton.disabled = true;
-	openButton.disabled = false;
-	joinButton.disabled = false;
-	
-	clearInterval(timer);
-	peer.Disconnect(id);
-	peer.Shutdown();
-	peer = null;
-	id = null;
-
+function testRemoteCamera() {
+    FrameBuffer.DEBUG_SHOW_ELEMENTS = true;
+    var netConf = new NetworkConfig;
+    netConf.SignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
+    var t = new BrowserMediaNetwork(netConf);
+    //var n = new BrowserMediaNetwork(e);
+    var i = new MediaConfig;
+    i.Audio = true;
+    i.Video = true;
+    setTimeout(function() {
+        t.Configure(i)
+    }, 5e3);
+    setTimeout(function() {
+        console.log("connecting network1");
+        t.StartServer("ts");
+        if (n != null) n.Configure(i)
+    }, 1e4);
+    
+    setTimeout(function() {
+        if (n != null) {
+            console.log("connecting network2");
+            n.StartServer("ts")
+        }
+    }, 15e3);
+    
+    var r = null;
+    var o = null;
+    setInterval(function() {
+        t.Update();
+        var e = null;
+        var i = null;
+        e = t.TryGetFrame(ConnectionId.INVALID);
+        if (e != null) console.log("local1 width" + e.Width + " height:" + e.Height + " data:" + e.Buffer[0]);
+        var a;
+        while ((a = t.Dequeue()) != null) {
+            console.log("network1: " + a.toString());
+            if (a.Type == NetEventType.NewConnection) {
+                r = a.ConnectionId
+            }
+        }
+        if (r != null) {
+            e = t.TryGetFrame(r);
+            if (e != null) console.log("remote1 width" + e.Width + " height:" + e.Height + " data:" + e.Buffer[0])
+        }
+        t.Flush();
+        
+        if (n == null) return;
+        n.Update();
+        i = n.TryGetFrame(ConnectionId.INVALID);
+        if (i != null) console.log("local2 width" + i.Width + " height:" + i.Height + " data:" + i.Buffer[0]);
+        while ((a = n.Dequeue()) != null) {
+            console.log("network2: " + a.toString());
+            if (a.Type == NetEventType.NewConnection) {
+                o = a.ConnectionId
+            }
+        }
+        if (o != null) {
+            i = n.TryGetFrame(o);
+            if (i != null) console.log("remote2 width" + i.Width + " height:" + i.Height + " data:" + i.Buffer[0])
+        }
+        n.Flush()
+        
+    }, 50)
 }
