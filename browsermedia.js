@@ -80,7 +80,7 @@ var AWebRtcCall = function() {
             throw new InvalidOperationException("Method can't be used in state " + this.mState)
         }
         this.mState = CallState.Configuring;
-        SLog.Log("Enter state CallState.Configuring");
+        console.log("Enter state CallState.Configuring");
         this.mMediaConfig = e;
         this.mNetwork.Configure(this.mMediaConfig)
     };
@@ -92,7 +92,7 @@ var AWebRtcCall = function() {
         if (this.mConferenceMode) {
             throw new InvalidOperationException("Method can't be used in conference calls.")
         }
-        SLog.Log("Call to " + e);
+        console.log("Call to " + e);
         this.EnsureConfiguration();
         if (this.mState == CallState.Configured) {
             this.ProcessCall(e)
@@ -152,7 +152,7 @@ var AWebRtcCall = function() {
                         this.TriggerCallEvent(new CallEventArgs(CallEventType.CallAccepted));
                         if (this.mIsDisposed) return
                     } else {
-                        SLog.LogWarning("Received incoming connection during invalid state " + this.mState)
+                        console.logWarning("Received incoming connection during invalid state " + this.mState)
                     }
                     break;
                 case NetEventType.ConnectionFailed:
@@ -161,7 +161,7 @@ var AWebRtcCall = function() {
                         if (this.mIsDisposed) return;
                         this.mState = CallState.Configured
                     } else {
-                        SLog.LogError("Received ConnectionFailed during " + this.mState)
+                        console.logError("Received ConnectionFailed during " + this.mState)
                     }
                     break;
                 case NetEventType.Disconnected:
@@ -240,7 +240,7 @@ var AWebRtcCall = function() {
         this.mPendingListenCall = true
     };
     e.prototype.ProcessListen = function(e) {
-        SLog.Log("Listen at " + e);
+        console.log("Listen at " + e);
         this.mServerInactive = false;
         this.mState = CallState.RequestingAddress;
         this.mNetwork.StartServer(e);
@@ -264,7 +264,7 @@ var AWebRtcCall = function() {
     };
     e.prototype.EnsureConfiguration = function() {
         if (this.mState == CallState.Initialized) {
-            SLog.Log("Use default configuration");
+            console.log("Use default configuration");
             this.Configure(new MediaConfig)
         } else {}
     };
@@ -278,12 +278,12 @@ var AWebRtcCall = function() {
     e.prototype.OnConfigurationComplete = function() {
         if (this.mIsDisposed) return;
         this.mState = CallState.Configured;
-        SLog.Log("Enter state CallState.Configured");
+        console.log("Enter state CallState.Configured");
         this.TriggerCallEvent(new CallEventArgs(CallEventType.ConfigurationComplete));
         if (this.mIsDisposed == false) this.DoPending()
     };
     e.prototype.OnConfigurationFailed = function(e) {
-        SLog.LogWarning("Configuration failed: " + e);
+        console.logWarning("Configuration failed: " + e);
         if (this.mIsDisposed) return;
         this.mState = CallState.Initialized;
         this.TriggerCallEvent(new ErrorEventArgs(CallEventType.ConfigurationFailed, CallErrorType.Unknown, e));
@@ -619,8 +619,12 @@ var MediaConfig = function() {
 }();
 var NetworkConfig = function() {
     function e() {
-        this.mIceServers = new Array;
-        this.mSignalingUrl = "ws://because-why-not.com:12776";
+        this.mIceServers =  {'iceServers':[{
+    'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
+    'username': 'remotesupport',
+    'credential': 'h0lolens'
+    }]};
+        this.mSignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
         this.mIsConference = false
     }
     Object.defineProperty(e.prototype, "IceServers", {
