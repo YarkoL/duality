@@ -959,7 +959,7 @@ var WebsocketNetwork = function() {
 }();
 
 //Utils
-
+/*
 function bufferToString(e) {
     var t = new Uint16Array(e.buffer, e.byteOffset, e.byteLength / 2);
     return String.fromCharCode.apply(null, t)
@@ -974,6 +974,19 @@ function stringToBuffer(e) {
     var r = new Uint8Array(t);
     return r
 }
+*/
+
+function byteArrayToString(arr) {
+  return String.fromCharCode.apply(String, arr);
+}
+
+function stringToByteArray(str) {
+    var bytes = [];
+    for (var i = 0; i < str.length; ++i) {
+        bytes.push(str.charCodeAt(i));
+    }
+    return new Uint8Array(bytes);
+} 
 
 var Queue = function() {
     function e() {

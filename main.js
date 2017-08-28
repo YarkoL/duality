@@ -13,13 +13,19 @@ joinButton.onclick = join;
 sendButton.onclick = send;
 shutdownButton.onclick = shutdown;
 
-var conf = null;
+
+var conf =  {'iceServers':[{
+	'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
+	'username': 'remotesupport',
+	'credential': 'h0lolens'
+	}]};
 var uri = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
 
 var isServer = false;
 var peer = null; //this user
 var id = null; //the other one
 var room = "";
+var timer = null;
 
 //printMessage("Welcome!", "system");
 
@@ -47,7 +53,7 @@ function join() {
 }
 
 function listenForEvents() {
-	 setInterval(function() {
+	 timer = setInterval(function() {
 	    peer.Update();
 	    var event = null;
 	    while (event = peer.Dequeue()) {
@@ -63,7 +69,8 @@ function listenForEvents() {
 	        } else if (event.Type == NetEventType.Disconnected) {
 	            console.log("peer disconnected");event	 
 	        } else if (event.Type == NetEventType.ReliableMessageReceived) {
-	        	var msg = bufferToString(event.MessageData);
+	        	//var msg = bufferToString(event.MessageData);
+	        	var msg = byteArrayToString(event.MessageData);
 	        	printMessage(msg, "other");
 	        } 
 	    }
@@ -75,7 +82,8 @@ function send() {
 	var message = chatInput.value;
 	printMessage(message, "me");
 	if (id) {
-		var arr = stringToBuffer(message);
+		//var arr = stringToBuffer(message);
+		var arr = stringToByteArray(message); 
 		peer.SendData(id, arr, true);
 	} else {
 		printMessage("Sorry, failed to send!", "system")
@@ -95,6 +103,7 @@ function shutdown() {
 	openButton.disabled = false;
 	joinButton.disabled = false;
 	
+	clearInterval(timer);
 	peer.Disconnect(id);
 	peer.Shutdown();
 	peer = null;
