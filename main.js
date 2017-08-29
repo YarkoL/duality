@@ -1,21 +1,26 @@
 console.log("Duality main.js");
 
 const startButton = document.getElementById("startButton");
-startButton.onclick = rtcCallTest;
+startButton.onclick = rtcCall;
 
-function rtcCallTest() {
+const isServerCheckBox = document.getElementById("isServerCheckBox");
+const addrInput = document.getElementById("addrInput");
+
+function rtcCall() {
     console.log("start");
+    var isServer = isServerCheckBox.checked ? true : false;
+	console.log("Is server? " + isServer); 
     FrameBuffer.sUseLazyFrames = true;
     var conf = new NetworkConfig;
-    conf.IsConference = false;
+    conf.IsConference = isServer;
     conf.SignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
     console.log("Using secure connection " + conf.SignalingUrl);
-    var addr = getParameterByName("a");
+    var addr = addrInput.value;
     if (addr == null) {
         addr = GetRandomKey();
-        window.location.href = window.location.href + "?a=" + addr;
-        return
+        return;
     }
+    console.log("Using address " + addr);
     var rtcCall = new BrowserWebRtcCall(conf);
     var videoElement = null;
     var connections = {};
