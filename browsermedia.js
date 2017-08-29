@@ -161,7 +161,7 @@ var AWebRtcCall = function() {
                         if (this.mIsDisposed) return;
                         this.mState = CallState.Configured
                     } else {
-                        console.logError("Received ConnectionFailed during " + this.mState)
+                        console.log("Received ConnectionFailed during " + this.mState)
                     }
                     break;
                 case NetEventType.Disconnected:
