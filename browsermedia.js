@@ -619,11 +619,21 @@ var MediaConfig = function() {
 }();
 var NetworkConfig = function() {
     function e() {
-        this.mIceServers =  {'iceServers':[{
+      /*    
+    this.mIceServers =  {'iceServers':[{
     'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
     'username': 'remotesupport',
     'credential': 'h0lolens'
     }]};
+     
+     */
+
+      this.mIceServers = [{
+        'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
+        'username': 'remotesupport',
+        'credential': 'h0lolens'
+        }];
+     
         this.mSignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
         this.mIsConference = false
     }
