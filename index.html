@@ -6,20 +6,15 @@
 	<link rel="stylesheet" href="main.css" />
 </head>
 <body>
-	<div>
-		<h1>Video call test</h1>
-		<!--
-		<input type="text" id="roomInput" placeholder="Room name">
-		<button id="openButton" >Open room</button> 
-		<button id="joinButton" >Join room</button>
-		<input type="text" id="chatInput" placeholder="Say something">
-		<button id="sendButton" disabled="disabled">Send</button><br>
-		<button id="shutdownButton" disabled="disabled">Shut down</button><br>
-		<div id='chat'></div>
-		-->	
+	<div id="content">		
 		<input type="text" id="addrInput" placeholder="Call address">
 		<input id="isServerCheckBox" type="checkbox">Is server</input>
 		<button id="startButton">Start</button>
+		<button id="stopButton" disabled="disabled">Stop</button>
+		<div id="videoFrames"></div>
+		<input type="text" id="chatInput" placeholder="Say something">
+		<button id="sendButton" disabled="disabled">Send</button><br>
+		<div id="chat"></div>
 	</div> 
 		<script src="webrtcnetwork.js"></script>
 		<script src="browsermedia.js"></script>

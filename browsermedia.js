@@ -619,15 +619,7 @@ var MediaConfig = function() {
 }();
 var NetworkConfig = function() {
     function e() {
-      /*    
-    this.mIceServers =  {'iceServers':[{
-    'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
-    'username': 'remotesupport',
-    'credential': 'h0lolens'
-    }]};
-     
-     */
-
+    
       this.mIceServers = [{
         'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
         'username': 'remotesupport',
@@ -984,7 +976,7 @@ var FrameBuffer = function() {
                 e.mCanvasElement = null
             }
             e.mIsActive = true
-        };
+        };stop
         var t = window.URL.createObjectURL(this.mStream);
         this.mVideoElement.src = t
     };
