@@ -976,7 +976,7 @@ var FrameBuffer = function() {
                 e.mCanvasElement = null
             }
             e.mIsActive = true
-        };stop
+        };
         var t = window.URL.createObjectURL(this.mStream);
         this.mVideoElement.src = t
     };
