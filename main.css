@@ -21,7 +21,7 @@ body {
 	overflow-y: scroll; 
 	margin-top:10px;
 	height: 150px;
-	width: 550px;
+	width: 600px;
 	float:left;
 }
 
@@ -37,9 +37,9 @@ video {
 }
 
 .other {
-	color: blue;
+	color: green;
 }
 .system {
-	color: red;
+	color: blue;
 }
-.me {}
+.chat {}

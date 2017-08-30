@@ -626,6 +626,7 @@ var NetworkConfig = function() {
         'credential': 'h0lolens'
         }];
      
+        //this.mSignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777/callapp";
         this.mSignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
         this.mIsConference = false
     }

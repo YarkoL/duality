@@ -9,30 +9,38 @@ const isServerCheckBox = document.getElementById("isServerCheckBox");
 const addrInput = document.getElementById("addrInput");
 const videoFrames = document.getElementById("videoFrames");
 const content = document.getElementById("content");
+const chatInput = document.getElementById("chatInput");
+const sendButton = document.getElementById("sendButton");
+const chat = document.getElementById("chat");
 
 var rtcCall = null;
 
 function startPeer() {
-    console.log("start");
+	chat.innerHTML = "";
+	runPeer();
+}
+
+function runPeer() {
+	
     var isServer = isServerCheckBox.checked ? true : false;
-	console.log("Is server? " + isServer); 
+	printMsg("Starting " + (isServer? "server" : "client" ) + "...", "system");
     FrameBuffer.sUseLazyFrames = true;
     var conf = new NetworkConfig;
     conf.IsConference = isServer;
     conf.SignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
-    console.log("Using secure connection " + conf.SignalingUrl);
+    printMsg("Signaling : " + conf.SignalingUrl, "system");
     var addr = addrInput.value;
     if (addr == null) {
         addr = GetRandomKey();
         return;
     }
-    console.log("Using address " + addr);
+    printMsg("Using address '" + addr + "'", "system");
     rtcCall = new BrowserWebRtcCall(conf);
     var videoElement = null;
     var connections = {};
     rtcCall.addEventListener(function(o, event) {
         if (event.Type == CallEventType.ConfigurationComplete) {
-            console.log("configuration complete");
+            printMsg("configuration complete", "system");
             stopButton.disabled = false;
             startButton.disabled = true;
         } else if (event.Type == CallEventType.FrameUpdate) {
@@ -40,12 +48,12 @@ function startPeer() {
             if (videoElement == null && evt.ConnectionId == ConnectionId.INVALID) {
                 var linebreak = document.createElement("br");
                 content.appendChild(linebreak);
-                console.log("local video added");
+                printMsg("local video added", "system");
                 var frame = evt.Frame;
                 videoElement = frame.FrameGenerator.VideoElement;
                 videoFrames.appendChild(videoElement)
             } else if (evt.ConnectionId != ConnectionId.INVALID && connections[evt.ConnectionId.id] == null) {
-                console.log("remote video added");
+                printMsg("remote video added","system");
                 var frame = evt.Frame;
                 connections[evt.ConnectionId.id] = frame.FrameGenerator.VideoElement;
                 videoFrames.appendChild(connections[evt.ConnectionId.id]);
@@ -56,16 +64,16 @@ function startPeer() {
             if (conf.IsConference == false) {
                 rtcCall.Call(addr)
             } else {
-                console.error("Listening failed. Server dead?")
+                printMsg("Listening failed. Server dead?", "system")
             }
         } else if (event.Type == CallEventType.ConnectionFailed) {
-            alert("connection failed")
+            alert("connection failed");
         } else if (event.Type == CallEventType.CallEnded) {
             var evt = event;
-            console.log("call ended with id " + evt.ConnectionId.id);
+            printMsg("call ended with id " + evt.ConnectionId.id, "system");
             connections[evt.ConnectionId.id] = null
         } else {
-            console.log(event.Type)
+            console.log("got unhandled event type " + event.Type);
         }
     });
     setInterval(function() {
@@ -82,3 +90,6 @@ function stopPeer() {
 	startButton.disabled = false;
 }
 
+function printMsg(txt, classId) {
+  chat.innerHTML += "<span class = " + classId + "> " + txt + "</span><br>";
+}
