@@ -71,7 +71,12 @@ function runPeer() {
         } else if (event.Type == CallEventType.CallEnded) {
             var evt = event;
             printMsg("call ended with id " + evt.ConnectionId.id, "system");
-            connections[evt.ConnectionId.id] = null
+            connections[evt.ConnectionId.id] = null;
+        }    
+          else if (event.Type == CallEventType.Message) {
+          	var evt = event;
+          	console.log("message from " + evt.ConnectionId.id + " : " + evt.Content);
+          	printMsg(evt.Content, "other");
         } else {
             console.log("got unhandled event type " + event.Type);
         }

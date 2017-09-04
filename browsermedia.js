@@ -114,10 +114,11 @@ var AWebRtcCall = function() {
     };
     e.prototype.Send = function(e) {
         this.CheckDisposed();
-        var t = Encoding.UTF16.GetBytes(e);
+        //var t = Encoding.UTF16.GetBytes(e);
+        var t = stringToByteArray(e);
         for (var n = 0, i = this.mConnectionIds; n < i.length; n++) {
             var r = i[n];
-            SLog.L("Send message to " + r + "! " + e);
+            console.log("Send message to " + r + "! " + e);
             this.mNetwork.SendData(new ConnectionId(r), t, true)
         }
     };
@@ -195,7 +196,8 @@ var AWebRtcCall = function() {
                     } else {}
                     break;
                 case NetEventType.ReliableMessageReceived:
-                    var n = Encoding.UTF16.GetString(t.MessageData);
+                    //var n = Encoding.UTF16.GetString(t.MessageData);
+                    var n = byteArrayToString(t.MessageData);
                     this.TriggerCallEvent(new MessageEventArgs(t.ConnectionId, n));
                     if (this.mIsDisposed) return;
                     break
