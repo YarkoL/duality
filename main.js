@@ -4,13 +4,14 @@ const startButton = document.getElementById("startButton");
 startButton.onclick = startPeer;
 const stopButton =document.getElementById("stopButton");
 stopButton.onclick = stopPeer;
+const sendButton = document.getElementById("sendButton");
+sendButton.onclick = sendTxt;
 
 const isServerCheckBox = document.getElementById("isServerCheckBox");
 const addrInput = document.getElementById("addrInput");
 const videoFrames = document.getElementById("videoFrames");
 const content = document.getElementById("content");
 const chatInput = document.getElementById("chatInput");
-const sendButton = document.getElementById("sendButton");
 const chat = document.getElementById("chat");
 
 var rtcCall = null;
@@ -43,6 +44,8 @@ function runPeer() {
             printMsg("configuration complete", "system");
             stopButton.disabled = false;
             startButton.disabled = true;
+            chatInput.disabled = false;
+            sendButton.disabled = false;
         } else if (event.Type == CallEventType.FrameUpdate) {
             var evt = event;
             if (videoElement == null && evt.ConnectionId == ConnectionId.INVALID) {
@@ -88,11 +91,23 @@ function runPeer() {
     rtcCall.Listen(addr);
 }
 
+
+function sendTxt() {
+	var message = chatInput.value;
+	printMsg(message, "me");
+	rtcCall.Send(message);
+	console.log("sent message " + message);
+	chatInput.value = "";
+}
+
+
 function stopPeer() {
 	if (!rtcCall) return; 
 	rtcCall.Dispose();
 	stopButton.disabled = true;
 	startButton.disabled = false;
+	chatInput.disabled = true;
+    sendButton.disabled = true;
 }
 
 function printMsg(txt, classId) {

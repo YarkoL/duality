@@ -972,6 +972,21 @@ function stringToByteArray(str) {
     return new Uint8Array(bytes);
 } 
 
+/*
+ 
+function stringToByteArray2(str) {
+    var arrayBuf = new ArrayBuffer(str.length * 2);
+    var uint16Arr = new Uint16Array(arrayBuf);
+    for (var i = 0, len = str.length; i < len; i++) {
+        uint16Arr[i] = str.charCodeAt(i)
+    }
+    var uint8Arr = new Uint8Array(t);
+    return uint8Arr;
+} 
+
+*/
+
+
 var Queue = function() {
     function e() {
         this.mArr = new Array

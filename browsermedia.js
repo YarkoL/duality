@@ -114,8 +114,8 @@ var AWebRtcCall = function() {
     };
     e.prototype.Send = function(e) {
         this.CheckDisposed();
-        //var t = Encoding.UTF16.GetBytes(e);
-        var t = stringToByteArray(e);
+        var t = Encoding.UTF16.GetBytes(e);
+        //var t = stringToByteArray(e);
         for (var n = 0, i = this.mConnectionIds; n < i.length; n++) {
             var r = i[n];
             console.log("Send message to " + r + "! " + e);
@@ -1250,62 +1250,45 @@ function GetRandomKey() {
     return e
 }
 
-function BrowserWebRtcCall_Test1() {
-    console.log("start");
-    FrameBuffer.sUseLazyFrames = true;
-    var e = new NetworkConfig;
-    e.IsConference = true;
-    e.SignalingUrl = "wss://because-why-not.com:12777/testshared";
-    console.log("Using secure connection " + e.SignalingUrl);
-    var t = getParameterByName("a");
-    if (t == null) {
-        t = GetRandomKey();
-        window.location.href = window.location.href + "?a=" + t;
-        return
+var Encoder = function() {
+    function e() {}
+    return e
+}();
+var UTF16Encoding = function(e) {
+    __extends(t, e);
+
+    function t() {
+        e.call(this)
     }
-    var n = new BrowserWebRtcCall(e);
-    var i = null;
-    var r = {};
-    n.addEventListener(function(o, a) {
-        if (a.Type == CallEventType.ConfigurationComplete) {
-            console.log("configuration complete")
-        } else if (a.Type == CallEventType.FrameUpdate) {
-            var s = a;
-            if (i == null && s.ConnectionId == ConnectionId.INVALID) {
-                var l = document.createElement("br");
-                document.body.appendChild(l);
-                console.log("local video added");
-                var u = s.Frame;
-                i = u.FrameGenerator.VideoElement;
-                document.body.appendChild(i)
-            } else if (s.ConnectionId != ConnectionId.INVALID && r[s.ConnectionId.id] == null) {
-                console.log("remote video added");
-                var u = s.Frame;
-                r[s.ConnectionId.id] = u.FrameGenerator.VideoElement;
-                document.body.appendChild(r[s.ConnectionId.id]);
-                var l = document.createElement("br");
-                document.body.appendChild(l)
-            }
-        } else if (a.Type == CallEventType.ListeningFailed) {
-            if (e.IsConference == false) {
-                n.Call(t)
-            } else {
-                console.error("Listening failed. Server dead?")
-            }
-        } else if (a.Type == CallEventType.ConnectionFailed) {
-            alert("connection failed")
-        } else if (a.Type == CallEventType.CallEnded) {
-            var c = a;
-            console.log("call ended with id " + c.ConnectionId.id);
-            r[c.ConnectionId.id] = null
-        } else {
-            console.log(a.Type)
+    t.prototype.GetBytes = function(e) {
+        return this.stringToBuffer(e)
+    };
+    t.prototype.GetString = function(e) {
+        return this.bufferToString(e)
+    };
+    t.prototype.bufferToString = function(e) {
+        var t = new Uint16Array(e.buffer, e.byteOffset, e.byteLength / 2);
+        return String.fromCharCode.apply(null, t)
+    };
+    t.prototype.stringToBuffer = function(e) {
+        var t = new ArrayBuffer(e.length * 2);
+        var n = new Uint16Array(t);
+        for (var i = 0, r = e.length; i < r; i++) {
+            n[i] = e.charCodeAt(i)
         }
+        var o = new Uint8Array(t);
+        return o
+    };
+    return t
+}(Encoder);
+var Encoding = function() {
+    function e() {}
+    Object.defineProperty(e, "UTF16", {
+        get: function() {
+            return new UTF16Encoding
+        },
+        enumerable: true,
+        configurable: true
     });
-    setInterval(function() {
-        n.Update()
-    }, 50);
-    var o = new MediaConfig;
-    n.Configure(o);
-    n.Listen(t)
-}
+    return e
+}();
