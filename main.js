@@ -28,8 +28,8 @@ function runPeer() {
     FrameBuffer.sUseLazyFrames = true;
     var conf = new NetworkConfig;
     conf.IsConference = isServer;
-    conf.SignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
-    printMsg("Signaling : " + conf.SignalingUrl, "system");
+    conf.SignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777/callapp";
+    console.log("Signaling : " + conf.SignalingUrl, "system");
     var addr = addrInput.value;
     if (addr == null) {
         addr = GetRandomKey();
