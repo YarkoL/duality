@@ -628,8 +628,8 @@ var NetworkConfig = function() {
         'credential': 'h0lolens'
         }];
      
-        //this.mSignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777/callapp";
-        this.mSignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777";
+        this.mSignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777/callapp";
+        
         this.mIsConference = false
     }
     Object.defineProperty(e.prototype, "IceServers", {
@@ -846,7 +846,7 @@ var BrowserMediaNetwork = function(e) {
     };
     t.prototype.PeekFrame = function(e) {
         if (e == null) return;
-        if (e.id == ConnectionId.INVALID.id) {
+        if (e.id == ConnectionId.INVALID.id) {mLocalFrameBuffer
             if (this.mLocalFrameBuffer != null) {
                 return this.mLocalFrameBuffer.PeekFrame()
             }
@@ -1153,24 +1153,6 @@ var MediaPeer = function(e) {
     };
     return t
 }(WebRtcDataPeer);
-
-function getParameterByName(e, t) {
-    if (!t) t = window.location.href;
-    e = e.replace(/[\[\]]/g, "\\$&");
-    var n = new RegExp("[?&]" + e + "(=([^&#]*)|&|#|$)"),
-        i = n.exec(t);
-    if (!i) return null;
-    if (!i[2]) return "";
-    return decodeURIComponent(i[2].replace(/\+/g, " "))
-}
-
-function GetRandomKey() {
-    var e = "";
-    for (var t = 0; t < 7; t++) {
-        e += String.fromCharCode(65 + Math.round(Math.random() * 25))
-    }
-    return e
-}
 
 var Encoder = function() {
     function e() {}

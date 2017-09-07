@@ -1,47 +1,134 @@
+/*
+Functionality to establish webRTC media and data exchange with 
+the corresponding Unity Plugin
+
+author : jarkko lehto
+last rev. 07-07-17 
+
+*/
+
 console.log("Duality main.js");
 
-const startButton = document.getElementById("startButton");
-startButton.onclick = startPeer;
-const stopButton =document.getElementById("stopButton");
-stopButton.onclick = stopPeer;
-const sendButton = document.getElementById("sendButton");
-sendButton.onclick = sendTxt;
+/*
+initialization
+*/
 
-const isServerCheckBox = document.getElementById("isServerCheckBox");
-const addrInput = document.getElementById("addrInput");
-const videoFrames = document.getElementById("videoFrames");
+//the main content div, used to append video in
 const content = document.getElementById("content");
+//string : address token for both peers to find each other
+const addrInput = document.getElementById("addrInput"); 
+//boolean : whether this listens for inbound connections (is server)
+// or makes an outbound connnnection (is client)
+const isServerCheckBox = document.getElementById("isServerCheckBox");
+//starts the peer
+const startButton = document.getElementById("startButton");
+//stops the peer
+const stopButton =document.getElementById("stopButton");
+//string : input text message
 const chatInput = document.getElementById("chatInput");
+//two canvas elements, for local and remote. Video stream 
+//is rendered on them. See CreateFrame in FrameBuffer 
+const videoFrames = document.getElementById("videoFrames");
+//send text message
+const sendButton = document.getElementById("sendButton");
+//text messages and some debug info are written into the chat window
 const chat = document.getElementById("chat");
 
+//onClick event handlers
+startButton.onclick = StartPeer;
+stopButton.onclick = StopPeer;
+sendButton.onclick = SendText;
+
+//the call object, instance of BrowserWebRtcCall
 var rtcCall = null;
 
-function startPeer() {
+/*
+StartPeer
+- only needed because we need to clear up the chat window contents 
+outside the actual peer operation
+*/
+function StartPeer() 
+{
 	chat.innerHTML = "";
-	runPeer();
+	RunPeer();
 }
 
-function runPeer() {
-	
-    var isServer = isServerCheckBox.checked ? true : false;
-	printMsg("Starting " + (isServer? "server" : "client" ) + "...", "system");
-    FrameBuffer.sUseLazyFrames = true;
-    var conf = new NetworkConfig;
-    conf.IsConference = isServer;
-    conf.SignalingUrl = "wss://remotesupport.northeurope.cloudapp.azure.com:12777/callapp";
-    console.log("Signaling : " + conf.SignalingUrl, "system");
-    var addr = addrInput.value;
-    if (addr == null) {
-        addr = GetRandomKey();
+/*
+StopPeer 
+- disposes the existing call and does UI cleanup
+
+*/
+function StopPeer()
+{
+	if (rtcCall == false) 
+	{
+		AppendToChat("Could not dispose peer", "system");
+	} 
+	else 
+	{
+		rtcCall.Dispose();
+	}
+	stopButton.disabled = true;
+	startButton.disabled = false;
+	chatInput.disabled = true;
+    sendButton.disabled = true;
+}
+
+/*
+SendText
+- read the inputted text from 
+
+*/
+function SendText()
+{
+	var message = chatInput.value;
+	AppendToChat(message, "me");
+	rtcCall.Send(message);
+	console.log("sent message " + message);
+	chatInput.value = "";
+}
+
+/*
+AppendToChat 
+- prints color-coded messages to the chat window
+
+args:
+	txt - string to be outputted
+	classId - styles defined in main.css, appear in different colors.
+	 	Values are:
+		system - for debug info
+        other - text messages from Unity plugin
+        me - my text messages
+*/
+
+function AppendToChat(txt, classId) 
+{ 
+  chat.innerHTML += "<span class = " + classId + "> " + txt + "</span><br>";
+}
+
+function RunPeer() 
+{	
+	var addr = addrInput.value;
+    if (addr == null) 
+    {
+        AppendToChat("Please enter an address", "system");
         return;
     }
-    printMsg("Using address '" + addr + "'", "system");
+
+    FrameBuffer.sUseLazyFrames = true;
+    var conf = new NetworkConfig;
+
+    conf.IsConference = isServerCheckBox.checked;
+    AppendToChat("Starting " + (conf.IsConference? "server" : "client" ) + "...", "system");    
+    console.log("Signaling url: " + conf.SignalingUrl);
+    AppendToChat("Using address '" + addr + "'", "system");
+    
     rtcCall = new BrowserWebRtcCall(conf);
     var videoElement = null;
     var connections = {};
     rtcCall.addEventListener(function(o, event) {
         if (event.Type == CallEventType.ConfigurationComplete) {
-            printMsg("configuration complete", "system");
+            AppendToChat("configuration complete", "system");
             stopButton.disabled = false;
             startButton.disabled = true;
             chatInput.disabled = false;
@@ -51,12 +138,12 @@ function runPeer() {
             if (videoElement == null && evt.ConnectionId == ConnectionId.INVALID) {
                 var linebreak = document.createElement("br");
                 content.appendChild(linebreak);
-                printMsg("local video added", "system");
+                AppendToChat("local video added", "system");
                 var frame = evt.Frame;
                 videoElement = frame.FrameGenerator.VideoElement;
                 videoFrames.appendChild(videoElement)
             } else if (evt.ConnectionId != ConnectionId.INVALID && connections[evt.ConnectionId.id] == null) {
-                printMsg("remote video added","system");
+                AppendToChat("remote video added","system");
                 var frame = evt.Frame;
                 connections[evt.ConnectionId.id] = frame.FrameGenerator.VideoElement;
                 videoFrames.appendChild(connections[evt.ConnectionId.id]);
@@ -67,19 +154,19 @@ function runPeer() {
             if (conf.IsConference == false) {
                 rtcCall.Call(addr)
             } else {
-                printMsg("Listening failed. Server dead?", "system")
+                AppendToChat("Listening failed. Server dead?", "system")
             }
         } else if (event.Type == CallEventType.ConnectionFailed) {
             alert("connection failed");
         } else if (event.Type == CallEventType.CallEnded) {
             var evt = event;
-            printMsg("call ended with id " + evt.ConnectionId.id, "system");
+            AppendToChat("call ended with id " + evt.ConnectionId.id, "system");
             connections[evt.ConnectionId.id] = null;
         }    
           else if (event.Type == CallEventType.Message) {
           	var evt = event;
           	console.log("message from " + evt.ConnectionId.id + " : " + evt.Content);
-          	printMsg(evt.Content, "other");
+          	AppendToChat(evt.Content, "other");
         } else {
             console.log("got unhandled event type " + event.Type);
         }
@@ -91,25 +178,3 @@ function runPeer() {
     rtcCall.Listen(addr);
 }
 
-
-function sendTxt() {
-	var message = chatInput.value;
-	printMsg(message, "me");
-	rtcCall.Send(message);
-	console.log("sent message " + message);
-	chatInput.value = "";
-}
-
-
-function stopPeer() {
-	if (!rtcCall) return; 
-	rtcCall.Dispose();
-	stopButton.disabled = true;
-	startButton.disabled = false;
-	chatInput.disabled = true;
-    sendButton.disabled = true;
-}
-
-function printMsg(txt, classId) {
-  chat.innerHTML += "<span class = " + classId + "> " + txt + "</span><br>";
-}
