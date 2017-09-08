@@ -3,7 +3,7 @@ Functionality to establish webRTC media and data exchange with
 the corresponding Unity Plugin
 
 author : jarkko lehto
-last rev. 07-07-17 
+last rev. 07-08-17 
 
 */
 
@@ -120,7 +120,6 @@ function RunPeer()
         AppendToChat("Please enter an address", "system");
         return;
     }
-
     FrameBuffer.sUseLazyFrames = true;
     var conf = new NetworkConfig;
     conf.IsConference = isServerCheckBox.checked;
@@ -134,52 +133,63 @@ function RunPeer()
     var videoElement = null;
     var connections = {};
 
-    rtcCall.addEventListener(function(o, event) {
-        if (event.Type == CallEventType.ConfigurationComplete) {
-            AppendToChat("configuration complete", "system");
-            stopButton.disabled = false;
-            startButton.disabled = true;
-            chatInput.disabled = false;
-            sendButton.disabled = false;
-        } else if (event.Type == CallEventType.FrameUpdate) {
-            var evt = event;
-            if (videoElement == null && evt.ConnectionId == ConnectionId.INVALID) {
-                var linebreak = document.createElement("br");
-                content.appendChild(linebreak);
-                AppendToChat("local video added", "system");
-                var frame = evt.Frame;
-                videoElement = frame.FrameGenerator.VideoElement;
-                videoFrames.appendChild(videoElement)
-            } else if (evt.ConnectionId != ConnectionId.INVALID && connections[evt.ConnectionId.id] == null) {
-                AppendToChat("remote video added","system");
-                var frame = evt.Frame;
-                connections[evt.ConnectionId.id] = frame.FrameGenerator.VideoElement;
-                videoFrames.appendChild(connections[evt.ConnectionId.id]);
-                var linebreak = document.createElement("br");
-               	content.appendChild(linebreak)
-            }
-        } else if (event.Type == CallEventType.ListeningFailed) {
-            if (conf.IsConference == false) {
-                rtcCall.Call(addr)
-            } else {
-                AppendToChat("Listening failed. Server dead?", "system")
-            }
-        } else if (event.Type == CallEventType.ConnectionFailed) {
-            alert("connection failed");
-        } else if (event.Type == CallEventType.CallEnded) {
-            var evt = event;
-            AppendToChat("call ended with id " + evt.ConnectionId.id, "system");
-            connections[evt.ConnectionId.id] = null;
-        }    
-          else if (event.Type == CallEventType.Message) {
-          	var evt = event;
-          	console.log("message from " + evt.ConnectionId.id + " : " + evt.Content);
-          	AppendToChat(evt.Content, "other");
-        } else {
-            console.log("got unhandled event type " + event.Type);
+    rtcCall.addEventListener(function(obj, event) 
+    {
+        var evt = event;
+        switch(event.Type) 
+        {
+            case CallEventType.ConfigurationComplete :
+                //UI changes, opposite of StopPeer
+                stopButton.disabled = false;
+                startButton.disabled = true;
+                chatInput.disabled = false;
+                sendButton.disabled = false;
+                AppendToChat("configuration complete", "system");
+                break;
+
+            case CallEventType.FrameUpdate :
+                //TODO need to sort out the logic and DRY
+                if (videoElement == null && evt.ConnectionId == ConnectionId.INVALID) 
+                {
+                    var linebreak = document.createElement("br");
+                    content.appendChild(linebreak);
+                    AppendToChat("local video added", "system");
+                    var frame = evt.Frame;
+                    videoElement = frame.FrameGenerator.VideoElement;
+                    videoFrames.appendChild(videoElement)
+                } 
+                else if (evt.ConnectionId != ConnectionId.INVALID && connections[evt.ConnectionId.id] == null)
+                {
+                    AppendToChat("remote video added","system");
+                    var frame = evt.Frame;
+                    connections[evt.ConnectionId.id] = frame.FrameGenerator.VideoElement;
+                    videoFrames.appendChild(connections[evt.ConnectionId.id]);
+                    var linebreak = document.createElement("br");
+                    content.appendChild(linebreak)
+                }
+                break;
+
+            case CallEventType.Message :
+                AppendToChat(evt.Content, "other");
+                console.log("message from " + evt.ConnectionId.id + " : " + evt.Content);
+                break;
+
+            case CallEventType.ListeningFailed :
+            
+                break;
+
+            case CallEventType.CallEnded : 
+            
+                break;    
+
+            case CallEventType.ConnectionFailed :
+
+                break;
+
+            default :
+                console.log("got unhandled event type " + event.Type);
         }
     });
-    
     setInterval(function() {
         rtcCall.Update()
     }, 50);
