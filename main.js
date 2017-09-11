@@ -58,7 +58,7 @@ outside the actual peer operation
 function StartPeer() 
 {
 	chat.innerHTML = "";
-	RunPeer();
+	RunPeer();ConnectionId
 }
 
 /*
@@ -148,25 +148,20 @@ function RunPeer()
                 break;
 
             case CallEventType.FrameUpdate :
-                //TODO need to sort out the logic and DRY
+                videoElement = evt.Frame.FrameGenerator.VideoElement;
+               
                 if (videoElement == null && evt.ConnectionId == ConnectionId.INVALID) 
                 {
-                    var linebreak = document.createElement("br");
-                    content.appendChild(linebreak);
                     AppendToChat("local video added", "system");
-                    var frame = evt.Frame;
-                    videoElement = frame.FrameGenerator.VideoElement;
-                    videoFrames.appendChild(videoElement)
                 } 
                 else if (evt.ConnectionId != ConnectionId.INVALID && connections[evt.ConnectionId.id] == null)
                 {
                     AppendToChat("remote video added","system");
-                    var frame = evt.Frame;
-                    connections[evt.ConnectionId.id] = frame.FrameGenerator.VideoElement;
-                    videoFrames.appendChild(connections[evt.ConnectionId.id]);
-                    var linebreak = document.createElement("br");
-                    content.appendChild(linebreak)
+                    connections[evt.ConnectionId.id] = videoElement;       
                 }
+                videoFrames.appendChild(videoElement);
+                var linebreak = document.createElement("br");
+                content.appendChild(linebreak)
                 break;
 
             case CallEventType.Message :
