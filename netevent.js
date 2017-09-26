@@ -190,4 +190,4 @@ var ConnectionId = (function () {
     return ConnectionId;
 }());
 
-//# sourceMappingURL=INetwork.js.map
+/* sourceMappingURL=INetwork.js.map */
