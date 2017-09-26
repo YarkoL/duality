@@ -153,7 +153,7 @@ var AWebRtcCall = function() {
                         this.TriggerCallEvent(new CallEventArgs(CallEventType.CallAccepted));
                         if (this.mIsDisposed) return
                     } else {
-                        console.logWarning("Received incoming connection during invalid state " + this.mState)
+                        console.log("Received incoming connection during invalid state " + this.mState)
                     }
                     break;
                 case NetEventType.ConnectionFailed:
@@ -285,7 +285,7 @@ var AWebRtcCall = function() {
         if (this.mIsDisposed == false) this.DoPending()
     };
     e.prototype.OnConfigurationFailed = function(e) {
-        console.logWarning("Configuration failed: " + e);
+        console.log("Configuration failed: " + e);
         if (this.mIsDisposed) return;
         this.mState = CallState.Initialized;
         this.TriggerCallEvent(new ErrorEventArgs(CallEventType.ConfigurationFailed, CallErrorType.Unknown, e));

@@ -19,7 +19,7 @@ const content = document.getElementById("content");
 //string : address token for both peers to find each other
 const addrInput = document.getElementById("addrInput"); 
 
-//boolean : whether this listens for inbound connections (is server)
+//boolean : whether this listens for inbound videoElements (is server)
 // or makes an outbound connnnection (is client). Tracks who starts the conversattion
 const isServerCheckBox = document.getElementById("isServerCheckBox");
 
@@ -120,6 +120,7 @@ function RunPeer()
         AppendToChat("Please enter an address", "system");
         return;
     }
+    //TODO explain this
     FrameBuffer.sUseLazyFrames = true;
     var conf = new NetworkConfig;
     conf.IsConference = isServerCheckBox.checked;
@@ -130,8 +131,11 @@ function RunPeer()
     AppendToChat("Using address '" + addr + "'", "system");
     
     rtcCall = new BrowserWebRtcCall(conf);
+
+    //UI element that contains the video, see SetupVideoElement 
     var videoElement = null;
-    var connections = {};
+    //array for videoelements containing active connections
+    var videoElements = {};
 
     rtcCall.addEventListener(function(obj, event) 
     {
@@ -152,12 +156,12 @@ function RunPeer()
                
                 if (videoElement == null && evt.ConnectionId == ConnectionId.INVALID) 
                 {
-                    AppendToChat("local video added", "system");
+                    AppendToChat("local video added", "system"); //TODO unclear if it ever goes in here
                 } 
-                else if (evt.ConnectionId != ConnectionId.INVALID && connections[evt.ConnectionId.id] == null)
+                else if (evt.ConnectionId != ConnectionId.INVALID && videoElements[evt.ConnectionId.id] == null)
                 {
                     AppendToChat("remote video added","system");
-                    connections[evt.ConnectionId.id] = videoElement;       
+                    videoElements[evt.ConnectionId.id] = videoElement;       
                 }
                 videoFrames.appendChild(videoElement);
                 var linebreak = document.createElement("br");
@@ -182,7 +186,7 @@ function RunPeer()
 
             case CallEventType.CallEnded : 
                 AppendToChat("call ended with id " + evt.ConnectionId.id, "system");
-                connections[evt.ConnectionId.id] = null;
+                videoElements[evt.ConnectionId.id] = null;
                 break;    
 
             case CallEventType.ConnectionFailed :
