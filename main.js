@@ -191,6 +191,7 @@ function RunPeer()
 
             case CallEventType.ConnectionFailed :
                 alert("Connection failed");
+		console.log(conf);
                 break;
 
             default :

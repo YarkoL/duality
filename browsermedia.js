@@ -623,7 +623,7 @@ var NetworkConfig = function() {
     function e() {
     
       this.mIceServers = [{
-        'urls':'turn: remotesupport.northeurope.cloudapp.azure.com',
+        'urls':'turn:remotesupport.northeurope.cloudapp.azure.com',
         'username': 'remotesupport',
         'credential': 'h0lolens'
         }];
