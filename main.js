@@ -58,7 +58,7 @@ outside the actual peer operation
 function StartPeer() 
 {
 	chat.innerHTML = "";
-	RunPeer();ConnectionId
+	RunPeer();
 }
 
 /*
